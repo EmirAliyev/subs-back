@@ -1,19 +1,36 @@
-import { Body, Controller, Delete, Get, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Query, Req } from '@nestjs/common';
 import { SubCardService } from './subs.service';
 import { UserCardActionDto } from './dto/user-card-action.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('sub-cards')
 export class SubCardController {
-  constructor(private readonly subCardService: SubCardService) { }
+  constructor(private readonly subCardService: SubCardService,
+    private jwtService: JwtService,
+
+  ) { }
 
   @Get()
   async getAllSubCards(
+    @Req() req,
     @Query('page') page = '1',
     @Query('limit') limit = '15',
-    @Query('categoryIds') categoryIds: string = '',
+    @Query('categoryIds') categoryIds = '',
     @Query('search') search = '',
-    @Query('userId') userId?: string,
   ) {
+    let userId: number | undefined = undefined;
+
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+
+      try {
+        const payload = this.jwtService.verify(token);
+        userId = payload.userId;
+      } catch {
+        userId = undefined;
+      }
+    }
 
     const pageNumber = parseInt(page, 10) || 1;
     const limitNumber = parseInt(limit, 10) || 15;
@@ -26,11 +43,10 @@ export class SubCardController {
       limit: limitNumber,
       categoryIds: categoryIdsArray,
       search,
-      userId: userId ? parseInt(userId, 10) : undefined,
+      userId,
     });
 
     return subCards;
-
   }
 
   @Post('add')

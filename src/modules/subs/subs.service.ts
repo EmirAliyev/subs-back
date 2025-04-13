@@ -17,7 +17,7 @@ export class SubCardService {
     limit: number;
     categoryIds?: number[];
     search?: string;
-    userId: number;
+    userId?: number; // теперь необязательный
   }): Promise<{
     data: any[];
     meta: {
@@ -54,17 +54,19 @@ export class SubCardService {
                 category: true,
               },
             },
-            user_sub_cards: {
-              where: {
-                user_id: userId,
-              },
-              select: {
-                id: true,
-                date_start: true,
-                date_end: true,
-                period: true,
-              },
-            },
+            user_sub_cards: userId
+              ? {
+                where: {
+                  user_id: userId,
+                },
+                select: {
+                  id: true,
+                  date_start: true,
+                  date_end: true,
+                  period: true,
+                },
+              }
+              : false,
           },
           where: whereCondition,
         }),
@@ -73,7 +75,7 @@ export class SubCardService {
         }),
       ]);
 
-      const data = cards.map(({ user_sub_cards, sub_card_category_pivots, ...rest }) => ({
+      const data = cards.map(({ user_sub_cards = [], sub_card_category_pivots, ...rest }) => ({
         ...rest,
         is_subscribed: user_sub_cards.length > 0,
         subscription: user_sub_cards.length > 0 ? user_sub_cards[0] : null,
@@ -95,10 +97,6 @@ export class SubCardService {
       throw new Error('Не удалось получить карточки');
     }
   }
-
-
-
-
 
   async addSubCardToUser(body: UserCardActionDto) {
     try {
