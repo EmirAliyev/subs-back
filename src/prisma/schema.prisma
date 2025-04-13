@@ -1,0 +1,85 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+
+}
+
+datasource db {
+  provider = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+
+model sub_card {
+  id            Int       @id @default(autoincrement())
+  name          String
+  price_per_month Float
+  description   String    @db.Text 
+  last_updated   DateTime  @updatedAt
+  currency      String    @db.VarChar(8)
+  img           String? 
+
+  user_sub_cards            user_sub_cards_pivot[]
+  sub_card_category_pivots  sub_card_category_pivot[]
+}
+
+model category {
+  id       Int       @id @default(autoincrement())
+  name     String
+
+  sub_card_category_pivots  sub_card_category_pivot[]
+}
+
+model sub_card_category_pivot {
+  id         Int       @id @default(autoincrement())
+
+  sub_card    sub_card  @relation(fields: [sub_card_id], references: [id])
+  sub_card_id  Int
+
+  category   category  @relation(fields: [category_id], references: [id])
+  category_id Int
+
+  created_at  DateTime  @default(now())
+
+  @@unique([sub_card_id, category_id])
+}
+
+model user {
+  id          Int       @id @default(autoincrement())
+  first_name  String?   @db.VarChar(30)
+  last_name   String?   @db.VarChar(30)
+  username    String?   @db.VarChar(30)
+  photo_url   String?   @db.VarChar(255)
+  create_at   DateTime  @default(now())
+  telegram_id  String    @unique 
+  user_sub_cards     user_sub_cards_pivot[]
+}
+
+model user_sub_cards_pivot{
+  id         Int       @id @default(autoincrement())
+  user       user      @relation(fields: [user_id], references: [id])
+  user_id     Int
+  sub_card    sub_card  @relation(fields: [sub_card_id], references: [id])
+  sub_card_id  Int
+
+  date_start String
+  date_end   String
+  period     Int
+
+  created_at  DateTime  @default(now())
+
+  @@unique([user_id, sub_card_id]) 
+}
+
+model currency_rate {
+  id         Int      @id @default(autoincrement())
+  from       String   @db.VarChar(8) 
+  to         String   @db.VarChar(8)
+  rate       Float 
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([from, to])
+}
