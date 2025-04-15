@@ -7,7 +7,9 @@ CREATE TABLE `sub_card` (
     `last_updated` DATETIME(3) NOT NULL,
     `currency` VARCHAR(8) NOT NULL,
     `img` VARCHAR(191) NULL,
+    `slug` VARCHAR(30) NOT NULL,
 
+    UNIQUE INDEX `sub_card_slug`(`slug`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

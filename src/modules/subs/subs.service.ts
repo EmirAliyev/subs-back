@@ -98,6 +98,51 @@ export class SubCardService {
     }
   }
 
+  async getSubBySlug(slug: string, userId?: number) {
+    const sub = await this.prismaService.sub_card.findFirst({
+      where: { slug },
+      include: {
+        sub_card_category_pivots: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    if (!sub) return null;
+
+    const baseData = {
+      ...sub,
+      categories: sub.sub_card_category_pivots.map((pivot) => pivot.category),
+    };
+
+    if (typeof userId !== 'number') {
+      return baseData;
+    }
+
+    const userSubscription = await this.prismaService.user_sub_cards_pivot.findFirst({
+      where: {
+        user_id: userId,
+        sub_card_id: sub.id,
+      },
+      select: {
+        id: true,
+        date_start: true,
+        date_end: true,
+        period: true,
+      },
+    });
+
+    return {
+      ...baseData,
+      is_subscribed: !!userSubscription,
+      subscription: userSubscription ?? null,
+    };
+  }
+
+
+
   async addSubCardToUser(body: UserCardActionDto) {
     try {
       const { user_id, card_id, date_start, period } = body;
@@ -235,14 +280,14 @@ export class SubCardService {
     }
   }
 
-  async getTopSubs() {
+  async getTopSubs(take = 10) {
     const subs = await this.prismaService.sub_card.findMany({
       orderBy: {
         user_sub_cards: {
           _count: 'desc',
         },
       },
-      take: 10,
+      take: take,
       include: {
         sub_card_category_pivots: {
           include: {
@@ -264,6 +309,8 @@ export class SubCardService {
     });
 
   }
+
+
 
 
 }

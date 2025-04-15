@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { SubCardService } from './subs.service';
 import { UserCardActionDto } from './dto/user-card-action.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -21,6 +21,7 @@ export class SubCardController {
     let userId: number | undefined = undefined;
 
     const authHeader = req.headers.authorization;
+
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
 
@@ -67,10 +68,30 @@ export class SubCardController {
     const result = await this.subCardService.removeSubCardFromUser(body);
     return result;
   }
-
   @Get('top')
-  async getTopSubs() {
-    const result = this.subCardService.getTopSubs()
+  async getTopSubs(@Query('take') take?: string) {
+    const result = await this.subCardService.getTopSubs(take ? parseInt(take) : 10)
+    return result
+  }
+
+  @Get('/:slug')
+  async getSubBySlug(@Req() req,
+    @Param('slug') slug: string) {
+    let userId: number | undefined = undefined;
+
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+
+      try {
+        const payload = this.jwtService.verify(token);
+        userId = payload.userId;
+      } catch {
+        userId = undefined;
+      }
+    }
+
+    const result = this.subCardService.getSubBySlug(slug, userId)
     return result
   }
 }
