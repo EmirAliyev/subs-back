@@ -1,9 +1,7 @@
 // src/gpt/gpt.controller.ts
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { GPTService } from './gpt.service';
-import { AuthGuard } from '../auth/auth.guard';
 
-@UseGuards(AuthGuard)
 @Controller('gpt')
 export class GPTController {
   constructor(private readonly gptService: GPTService) { }
