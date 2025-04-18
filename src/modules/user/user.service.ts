@@ -6,7 +6,7 @@ export class UserService {
   constructor(private readonly prismaService: PrismaService) { }
 
   async getUserSubs(userId: string) {
-    const [pivotList, usdToRubRate] = await Promise.all([
+    const [pivotList, currencyRates] = await Promise.all([
       this.prismaService.user_sub_cards_pivot.findMany({
         where: {
           user_id: +userId,
@@ -23,25 +23,27 @@ export class UserService {
           },
         },
       }),
-
-      this.prismaService.currency_rate.findFirst({
+  
+      this.prismaService.currency_rate.findMany({
         where: {
-          from: 'USD',
           to: 'RUB',
         },
       }),
     ]);
-
-    const usdRate = usdToRubRate?.rate || 1;
-
+  
+    const rateMap = currencyRates.reduce<Record<string, number>>((acc, rate) => {
+      acc[rate.from] = rate.rate;
+      return acc;
+    }, {});
+  
     return pivotList.map(pivot => {
       const card = pivot.sub_card;
-
-      const isUsd = card.currency === 'USD';
-      const convertedPrice = isUsd
-        ? Math.round(card.price_per_month * usdRate)
-        : card.price_per_month;
-
+      const cardCurrency = card.currency;
+  
+      const conversionRate = rateMap[cardCurrency] || 1;
+  
+      const convertedPrice = Math.round(card.price_per_month * conversionRate);
+  
       return {
         ...card,
         is_subscribed: 1,
@@ -53,6 +55,7 @@ export class UserService {
       };
     });
   }
+  
 
   async getUserSubsCategories(userId: string) {
     const categories = await this.prismaService.category.findMany({

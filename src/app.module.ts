@@ -8,6 +8,7 @@ import { PromptModule } from './modules/prompt/prompt.module';
 import { SubCardModule } from './modules/subs/subs.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UserModule } from './modules/user/user.module';
+import { GPTModule } from './modules/gpt/gpt.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,6 +20,7 @@ import { UserModule } from './modules/user/user.module';
     CategoriesModule,
     PriceParserModule,
     UserModule,
+    GPTModule,
     PromptModule
   ],
   controllers: [AppController],
