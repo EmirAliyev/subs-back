@@ -27,6 +27,7 @@ export class GPTService {
           },
         }
       );
+      console.log(res.data,53453)
       return res.data.choices[0].message.content;
     } catch (err) {
       console.error('OpenRouter error:', err?.response?.data || err);
