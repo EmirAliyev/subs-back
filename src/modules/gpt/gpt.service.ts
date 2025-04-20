@@ -117,8 +117,7 @@ export class GPTService {
   `;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
+      model: 'gpt-4', messages: [{ role: 'user', content: prompt }],
     });
 
     return completion.choices[0].message.content;
@@ -204,8 +203,7 @@ export class GPTService {
     `.trim();
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
+      model: 'gpt-4', messages: [{ role: 'user', content: prompt }],
     });
 
     // Обновляем или создаём счётчик
