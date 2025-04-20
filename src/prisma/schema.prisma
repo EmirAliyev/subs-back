@@ -25,6 +25,8 @@ model sub_card {
 
   user_sub_cards            user_sub_cards_pivot[]
   sub_card_category_pivots  sub_card_category_pivot[]
+  user_analysis_counters    user_analysis_counter[]
+
 }
 
 
@@ -50,15 +52,21 @@ model sub_card_category_pivot {
 }
 
 model user {
-  id          Int       @id @default(autoincrement())
-  first_name  String?   @db.VarChar(30)
-  last_name   String?   @db.VarChar(30)
-  username    String?   @db.VarChar(30)
-  photo_url   String?   @db.VarChar(255)
-  create_at   DateTime  @default(now())
-  telegram_id  String    @unique 
-  user_sub_cards     user_sub_cards_pivot[]
+  id                               Int                                 @id @default(autoincrement())
+  first_name                       String?                             @db.VarChar(30)
+  last_name                        String?                             @db.VarChar(30)
+  username                         String?                             @db.VarChar(30)
+  photo_url                        String?                             @db.VarChar(255)
+  create_at                        DateTime                            @default(now())
+  telegram_id                      String                              @unique
+  is_premium                       Boolean                             @default(false)
+  premium_expiry_date              DateTime?
+
+  user_sub_cards                   user_sub_cards_pivot[]
+  user_analysis_counters           user_analysis_counter[]
+  user_subscription_analysis_logs  user_subscription_analysis_counter[]
 }
+
 
 model user_sub_cards_pivot{
   id         Int       @id @default(autoincrement())
@@ -84,4 +92,29 @@ model currency_rate {
   updated_at DateTime @default(now()) @updatedAt
 
   @@unique([from, to])
+}
+
+model user_analysis_counter {
+  id                      Int                         @id @default(autoincrement())
+  user                    user                        @relation(fields: [user_id], references: [id])
+  user_id                 Int
+  count                   Int                         @default(0)
+  date                    DateTime                    @default(now()) 
+  sub_card                sub_card?                   @relation(fields: [sub_card_id], references: [id])
+  sub_card_id             Int?                       
+
+  updated_at              DateTime                    @updatedAt
+
+  @@unique([user_id, date]) 
+}
+
+model user_subscription_analysis_counter {
+  id         Int      @id @default(autoincrement())
+  user       user     @relation(fields: [user_id], references: [id])
+  user_id    Int
+  date       DateTime @default(now())
+  count      Int      @default(1)
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, date])
 }

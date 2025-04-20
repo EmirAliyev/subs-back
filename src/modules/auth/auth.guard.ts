@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -17,16 +17,16 @@ export class AuthGuard implements CanActivate {
       const { authorization } = request.headers;
 
       if (!authorization || authorization.trim() === '') {
-        throw new UnauthorizedException('Please provide token');
+        throw new UnauthorizedException('Необходимо авторизоваться');
       }
 
       const authToken = authorization.replace(/Bearer\s+/i, '').trim();
 
       const decoded = await this.jwtService.verifyAsync(authToken, {
-        secret: process.env.TOKEN_SECRET_KEY, 
+        secret: process.env.TOKEN_SECRET_KEY,
       });
 
-      request.user = decoded;  
+      request.user = decoded;
 
       return true;
     } catch (error) {
