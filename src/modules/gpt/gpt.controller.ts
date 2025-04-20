@@ -1,4 +1,3 @@
-// src/gpt/gpt.controller.ts
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { GPTService } from './gpt.service';
 
